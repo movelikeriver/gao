@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package proto;
+
+// Interface exported by the server.
+service GaoService {
+  rpc Lookup(GaoRequest) returns (GaoResponse) {}
+//  rpc StreamLookup(GaoRequest) returns (stream GaoResponse) {}
+}
+
+message GaoRequest {
+  int32 user_id = 1;
+}
+
+message GaoResponse {
+  string user_name = 1;
+  string position = 2;
+}
