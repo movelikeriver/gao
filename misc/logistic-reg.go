@@ -8,7 +8,7 @@
 //  e^{ -(\begin{bmatrix}\theta_{1}\\...\\\theta_{N}\end{bmatrix} *
 //        \begin{bmatrix}X_{1},&...,&X_{N}\end{bmatrix}) })
 //
-// https://www.latex4technics.com/creator.php?id=559e8c977df289.42728955&format=png&dpi=300&crop=1
+// https://www.latex4technics.com/creator.php?id=559e8f42f0d525.25273414&format=png&dpi=300&crop=1
 //
 // \begin{bmatrix}\theta_{1}\\...\\\theta_{N}\end{bmatrix}
 // =
