@@ -2,6 +2,14 @@
 //
 // The LaTex format formula is:
 //
+// H_{\theta} ( \begin{bmatrix}X_{1},&...,&X_{N}\end{bmatrix})
+// = 1 /
+// (1 +
+//  e^{ -(\begin{bmatrix}\theta_{1}\\...\\\theta_{N}\end{bmatrix} *
+//        \begin{bmatrix}X_{1},&...,&X_{N}\end{bmatrix}) })
+//
+// https://www.latex4technics.com/creator.php?id=559e8c977df289.42728955&format=png&dpi=300&crop=1
+//
 // \begin{bmatrix}\theta_{1}\\...\\\theta_{N}\end{bmatrix}
 // =
 // \begin{bmatrix}\theta_{1}\\...\\\theta_{N}\end{bmatrix}
@@ -15,6 +23,8 @@
 // ...\\
 // H_{\theta} ( \begin{bmatrix}X_{M1},&...,&X_{MN}\end{bmatrix}) - Y_{M}\\
 // \end{bmatrix}
+//
+// https://www.latex4technics.com/creator.php?id=559e8c977df289.42728955&format=png&dpi=300&crop=1
 //
 // Usage:
 //  go run logistic-reg.go --input_file=testSet.txt
