@@ -27,7 +27,7 @@
 // https://www.latex4technics.com/creator.php?id=559e8c977df289.42728955&format=png&dpi=300&crop=1
 //
 // Usage:
-//  go run logistic-reg.go --input_file=testSet.txt
+//   go run logistic-reg.go --input_file=testdata1.txt
 
 package main
 
@@ -36,6 +36,7 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"log"
 	"math"
 	"os"
 	"strconv"
@@ -44,7 +45,11 @@ import (
 	"github.com/gonum/matrix/mat64"
 )
 
-var inputFile = flag.String("input_file", "", "")
+var (
+	inputFile = flag.String("input_file", "", "The input file.")
+	alpha     = flag.Float64("alpha", 0.001, "The alpha step in each iteration.")
+	iterNum   = flag.Int("iteration_num", 2000, "The max num of iteration.")
+)
 
 type fm struct {
 	Matrix *mat64.Dense
@@ -84,6 +89,7 @@ func parseLine(line string) (arr []float64, y int) {
 		return nil, 0
 	}
 
+	// Prepend 1.0 into the training data.
 	return []float64{1.0, x1, x2}, y
 }
 
@@ -93,13 +99,57 @@ func sigmoid(theta *mat64.Dense, mx *mat64.Dense) float64 {
 	return 1.0 / (1.0 + math.Exp(-tmp.At(0, 0)))
 }
 
+func trainGradientDescent(alpha float64, iterNum int, mx *mat64.Dense, my *mat64.Dense, mtheta *mat64.Dense) {
+	mm, nn := mx.Dims()
+	// Sanity check.
+	func() {
+		yr, yc := my.Dims()
+		tr, tc := mtheta.Dims()
+		if yc != 1 || tc != 1 || yr != mm || tr != nn {
+			log.Fatal("invalid dimensions of input matrixes.")
+		}
+	}()
+
+	for it := 0; it < iterNum; it++ {
+		tmp_arr := make([]float64, mm)
+		for i := 0; i < mm; i++ {
+			vx := mx.View(i, 0, 1, nn).(*mat64.Dense)
+			sig := sigmoid(mtheta, vx)
+			tmp_arr[i] = (sig - my.At(i, 0)) * alpha
+		}
+		tmp_matrix := mat64.NewDense(mm, 1, tmp_arr)
+
+		var tmp1 mat64.Dense
+		tmp1.MulTrans(mx, true, tmp_matrix, false)
+		mtheta.Sub(mtheta, &tmp1)
+
+		fmt.Println("round: ", it)
+		printMatrix(mtheta)
+	}
+}
+
+func statPrecision(mx *mat64.Dense, my *mat64.Dense, mtheta *mat64.Dense) float64 {
+	rn, cn := mx.Dims()
+	cnt := 0
+	for i := 0; i < rn; i++ {
+		vx := mx.View(i, 0, 1, cn).(*mat64.Dense)
+		result := sigmoid(mtheta, vx)
+
+		y := my.At(i, 0)
+		fmt.Println(result, " vs ", y)
+		if (y == 1 && result > 0.5) || (y == 0 && result < 0.5) {
+			cnt++
+		}
+	}
+	return float64(cnt) / float64(rn)
+}
+
 func main() {
 	flag.Parse()
 
 	f, err := os.Open(*inputFile)
 	if err != nil {
-		fmt.Println(err)
-		return
+		log.Fatal(err)
 	}
 	defer f.Close()
 
@@ -116,12 +166,11 @@ func main() {
 		line, err = r.ReadString('\n')
 	}
 	if err != io.EOF {
-		fmt.Println(err)
-		return
+		log.Fatal(err)
 	}
 
-	nn := 3       // columns
-	mm := len(sy) // rows
+	nn := int(len(sarr) / len(sy)) // columns
+	mm := len(sy)                  // rows
 	mx := mat64.NewDense(mm, nn, sarr)
 	my := mat64.NewDense(mm, 1, sy)
 	ones := make([]float64, nn)
@@ -134,23 +183,7 @@ func main() {
 	printMatrix(my)
 	printMatrix(mtheta)
 
-	alpha := 0.005
-	for it := 0; it < 1000; it++ {
-		func() {
-			tmp_arr := make([]float64, mm)
-			for i := 0; i < mm; i++ {
-				vx := mx.View(i, 0, 1, nn).(*mat64.Dense)
-				sig := sigmoid(mtheta, vx)
-				tmp_arr[i] = (sig - my.At(i, 0)) * alpha
-			}
-			tmp_matrix := mat64.NewDense(mm, 1, tmp_arr)
+	trainGradientDescent(*alpha, *iterNum, mx, my, mtheta)
 
-			var tmp1 mat64.Dense
-			tmp1.MulTrans(mx, true, tmp_matrix, false)
-			mtheta.Sub(mtheta, &tmp1)
-
-			fmt.Println("round: ", it)
-			printMatrix(mtheta)
-		}()
-	}
+	fmt.Printf("precision: %.3f%%\n", statPrecision(mx, my, mtheta)*100)
 }
