@@ -1,17 +1,17 @@
 // A simple implementation of Alternating Least Squares.
+// Refer to Python version here: www.quuxlabs.com/blog/2010/09/matrix-factorization-a-simple-tutorial-and-implementation-in-python
 //
 // Formula
 //   R = P * Q
 //
-//  e_{ij}^2 = (r_{ij} - \sum_{k=1}^K{p_{ik}q_{kj}})^2 + \frac{\beta}{2} \sum_{k=1}^K{(||P||^2 + ||Q||^2)}
-//  see https://www.latex4technics.com/creator.php?id=55a205aaede5f3.98624301&format=png&dpi=300&crop=1
+//   e_{ij}^2 = (r_{ij} - \sum_{k=1}^K{p_{ik}q_{kj}})^2 + \frac{\beta}{2} \sum_{k=1}^K{(||P||^2 + ||Q||^2)}
+//   see https://www.latex4technics.com/creator.php?id=55a205aaede5f3.98624301&format=png&dpi=300&crop=1
 //
-//  p'_{ik} = p_{ik} + \alpha \frac{\partial}{\partial p_{ik}}e_{ij}^2 = p_{ik} + \alpha(2 e_{ij} q_{kj} - \beta p_{ik} )
-//  see https://www.latex4technics.com/creator.php?id=55a1a0a73b8910.76933644&format=png&dpi=300&crop=1
+//   p'_{ik} = p_{ik} + \alpha \frac{\partial}{\partial p_{ik}}e_{ij}^2 = p_{ik} + \alpha(2 e_{ij} q_{kj} - \beta p_{ik} )
+//   see https://www.latex4technics.com/creator.php?id=55a1a0a73b8910.76933644&format=png&dpi=300&crop=1
 //
-//  q'_{kj} = q_{kj} + \alpha \frac{\partial}{\partial q_{kj}}e_{ij}^2 = q_{kj} + \alpha(2 e_{ij} p_{ik} - \beta q_{kj} )
-//  see https://www.latex4technics.com/creator.php?id=55a20533a70f57.40146537&format=png&dpi=300&crop=1
-
+//   q'_{kj} = q_{kj} + \alpha \frac{\partial}{\partial q_{kj}}e_{ij}^2 = q_{kj} + \alpha(2 e_{ij} p_{ik} - \beta q_{kj} )
+//   see https://www.latex4technics.com/creator.php?id=55a20533a70f57.40146537&format=png&dpi=300&crop=1
 
 package main
 
@@ -78,7 +78,7 @@ func main() {
 	for iter := 0; iter < iterNum; iter++ {
 		for i := 0; i < mm; i++ {
 			for j := 0; j < nn; j++ {
-			      	var tmp mat64.Dense
+				var tmp mat64.Dense
 				tmp.Mul(mp, mq)
 				var me mat64.Dense
 				me.Sub(mr, &tmp)
