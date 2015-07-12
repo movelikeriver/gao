@@ -27,7 +27,7 @@
 // https://www.latex4technics.com/creator.php?id=559e8c977df289.42728955&format=png&dpi=300&crop=1
 //
 // Usage:
-//   go run logistic-reg.go --input_file=testdata1.txt
+//   go run logistic-reg.go --input_file=testdata1.txt --alpha=0.001 --iteration_num=2000
 
 package main
 
