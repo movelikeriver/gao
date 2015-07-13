@@ -26,6 +26,16 @@
 //
 // https://www.latex4technics.com/creator.php?id=559e8c977df289.42728955&format=png&dpi=300&crop=1
 //
+// SGD (Stochastic Gradient Descent) formula is:
+//
+// \begin{bmatrix}\theta_{1}\\...\\\theta_{N}\end{bmatrix}
+// = \begin{bmatrix}\theta_{1}\\...\\\theta_{N}\end{bmatrix}
+// - \alpha
+// * \begin{bmatrix}X_{k1}\\...\\X_{kN}\end{bmatrix}
+// * ( H_{\theta} ( \begin{bmatrix}X_{k1},&...,&X_{kN}\end{bmatrix}) - Y_{k} )
+//
+// https://www.latex4technics.com/creator.php?id=55a3311268fea2.89861852&format=png&dpi=300&crop=1
+//
 // Usage:
 //   go run logistic-reg.go --input_file=testdata1.txt --alpha=0.001 --iteration_num=2000
 
@@ -115,12 +125,44 @@ func trainGradientDescent(alpha float64, iterNum int, mx *mat64.Dense, my *mat64
 		for i := 0; i < mm; i++ {
 			vx := mx.View(i, 0, 1, nn).(*mat64.Dense)
 			sig := sigmoid(mtheta, vx)
-			tmp_arr[i] = (sig - my.At(i, 0)) * alpha
+			tmp_arr[i] = sig - my.At(i, 0)
 		}
 		tmp_matrix := mat64.NewDense(mm, 1, tmp_arr)
 
 		var tmp1 mat64.Dense
 		tmp1.MulTrans(mx, true, tmp_matrix, false)
+		tmp1.Scale(alpha, &tmp1)
+		mtheta.Sub(mtheta, &tmp1)
+
+		fmt.Println("round: ", it)
+		printMatrix(mtheta)
+	}
+}
+
+func trainStochasticGradientDescent(alpha float64, iterNum int, mx *mat64.Dense, my *mat64.Dense, mtheta *mat64.Dense) {
+	mm, nn := mx.Dims()
+	// Sanity check.
+	func() {
+		yr, yc := my.Dims()
+		tr, tc := mtheta.Dims()
+		if yc != 1 || tc != 1 || yr != mm || tr != nn {
+			log.Fatal("invalid dimensions of input matrixes.")
+		}
+	}()
+
+	for it := 0; it < iterNum*mm; it++ {
+		tmp_arr := make([]float64, 1)
+		i := it % mm
+		// SGD only pick up one sample data rather than the entire mm entries.
+		vx := mx.View(i, 0, 1, nn).(*mat64.Dense)
+		sig := sigmoid(mtheta, vx)
+		tmp_arr[0] = sig - my.At(i, 0)
+		tmp_matrix := mat64.NewDense(1, 1, tmp_arr)
+
+		var tmp1 mat64.Dense
+		tmp1.MulTrans(vx, true, tmp_matrix, false)
+
+		tmp1.Scale(alpha, &tmp1)
 		mtheta.Sub(mtheta, &tmp1)
 
 		fmt.Println("round: ", it)
@@ -183,7 +225,8 @@ func main() {
 	printMatrix(my)
 	printMatrix(mtheta)
 
-	trainGradientDescent(*alpha, *iterNum, mx, my, mtheta)
+	// trainGradientDescent(*alpha, *iterNum, mx, my, mtheta)
+	trainStochasticGradientDescent(*alpha, *iterNum, mx, my, mtheta)
 
 	fmt.Printf("precision: %.3f%%\n", statPrecision(mx, my, mtheta)*100)
 }
